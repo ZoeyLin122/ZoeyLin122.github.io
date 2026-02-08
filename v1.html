@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>玩轉情緒學習平台</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- 導航欄 -->
+    <nav class="bg-white px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-center nav-shadow sticky top-0 z-50">
+        <!-- Brand -->
+        <div class="w-full md:w-auto flex justify-between items-center mb-2 md:mb-0">
+            <div class="text-xl md:text-2xl font-bold text-orange-600 cursor-pointer flex items-center gap-2" onclick="navigate('home')">
+            <div class="w-auto h-10"> 
+            
+                <div class="w-full h-full overflow-hidden flex"> 
+                    <img src="https://i.ibb.co/Z1YkSdkd/14.png" class="w-auto h-full object-cover">
+                    <img src="https://i.ibb.co/mVdK4Ghb/10.png" class="w-auto h-full object-cover">
+                    <img src="https://i.ibb.co/xPfGsXb/12.png" class="w-auto h-full object-cover">
+                </div>
+
+            </div>
+            玩轉情緒學習平台
+            <div class="w-auto h-10">
+                <div class="w-full h-full overflow-hidden flex">  
+                    <img src="https://i.ibb.co/DfZhznB6/13.png" class="w-full h-full object-cover">
+                    <img src="https://i.ibb.co/HLVvK52X/9.png" class="w-full h-full object-cover">
+                    <img src="https://i.ibb.co/sJC5MmBd/11.png" class="w-full h-full object-cover">
+                </div>
+             </div>
+            </div>
+        </div>
+
+        <!-- Right Menu -->
+        <div class="w-full md:w-auto flex justify-end items-center space-x-4 md:space-x-6 text-gray-700 font-medium text-sm md:text-base">
+            <!-- 排行榜按鈕 (圓角長方形 + Icon) -->
+            <button onclick="navigate('leaderboard')" class="bg-orange-50 text-orange-800 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-inner border border-orange-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                排行榜
+            </button>
+
+            <!-- 使用者資訊區 (修改為可點擊) -->
+            <div class="flex items-center space-x-3 border-l pl-4 md:pl-6 border-gray-200 cursor-pointer group" onclick="navigate('profile')" title="查看個人檔案與成就">
+                <span class="bg-orange-50 group-hover:bg-orange-100 transition-colors text-orange-800 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-inner border border-orange-100">
+                    小明 
+                    <span class="bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-full ml-1" id="user-points-display">🪙 0</span>
+                </span>
+                
+                <!-- 登出 Icon -->
+                <button id="logoutBtn" onclick="event.stopPropagation(); showToast('您已成功登出')" class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50" title="登出">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主應用程式容器 -->
+    <div id="app-container" class="flex-grow flex flex-col relative">
+        
+        <!-- 1. 首頁 View -->
+        <main id="view-home" class="flex-grow flex items-center justify-center px-4 py-8 md:py-12 fade-in">
+            <div class="max-w-6xl w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                
+                <!-- 卡片: 情緒日記 -->
+                <div onclick="navigate('calendar')" class="bg-white rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer card-hover border-2 border-transparent hover:border-orange-200 shadow-sm group">
+                    <div class="w-20 h-20 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/93NQdRSK/5.png" class="w-full h-full object-cover"></div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors">情緒日記</h2>
+                    <p class="text-gray-500 text-center">紀錄今天的感受，與自己對話</p>
+                </div>
+
+                <!-- 卡片: 共感畫布 -->
+                <div onclick="navigate('canvas')" class="bg-white rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer card-hover border-2 border-transparent hover:border-blue-200 shadow-sm group">
+                    <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/39BhRqsy/6.png" class="w-full h-full object-cover"></div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">共感畫布</h2>
+                    <p class="text-gray-500 text-center">練習給予溫暖的正向支持</p>
+                </div>
+
+                <!-- 卡片: 案例探討 -->
+                <div class="bg-white rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer card-hover border-2 border-transparent hover:border-red-200 shadow-sm group">
+                    <div class="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/N6bhYRc9/8.png" class="w-full h-full object-cover"></div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors">案例探討</h2>
+                    <p class="text-gray-500 text-center">根據故事情境來進行非暴力溝通練習</p>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- 2. 日曆 View -->
+        <main id="view-calendar" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-4xl w-full bg-white rounded-3xl shadow-sm p-4 md:p-8">
+                <div class="flex flex-col-reverse md:flex-row items-center justify-between mb-6 md:mb-8 relative">
+                    <button onclick="navigate('home')" class="self-start md:self-center flex items-center text-gray-500 hover:text-orange-600 transition-colors mt-4 md:mt-0 z-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        <span class="text-sm md:text-base">返回首頁</span>
+                    </button>
+                    
+                    <div class="flex items-center justify-center w-full md:absolute md:left-0 md:right-0 pointer-events-none">
+                        <button onclick="changeMonth(-1)" class="pointer-events-auto p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-orange-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <h2 id="calendar-title" class="text-2xl md:text-3xl font-bold text-gray-800 mx-4 w-40 text-center"></h2>
+                        <button onclick="changeMonth(1)" class="pointer-events-auto p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-orange-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </div>
+                    <div class="hidden md:block w-20"></div> 
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1 md:gap-4 text-center"></div>
+            </div>
+        </main>
+
+        <!-- 3. 日記列表 View -->
+        <main id="view-day-list" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full flex flex-col h-full">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="navigate('calendar')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回日曆
+                    </button>
+                    <h2 id="day-list-title" class="text-2xl font-bold text-gray-800"></h2>
+                    <div class="w-20"></div> 
+                </div>
+                <div id="entries-container" class="space-y-4 mb-8"></div>
+                <button onclick="startWriting()" class="w-full py-4 rounded-xl border-2 border-dashed border-orange-300 text-orange-500 font-bold hover:bg-orange-50 hover:border-orange-400 transition-all flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    新增日記
+                </button>
+            </div>
+        </main>
+
+        <!-- 4-7. 寫作步驟 Views (合併邏輯) -->
+        <!-- Step 1: 觀察 -->
+        <main id="view-step-1" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 1/4：觀察</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">觀察｜你今天發生什麼事情？</h2>
+                <textarea id="input-obs" class="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-6" placeholder="請輸入..."></textarea>
+                <div class="mb-6"><p class="text-sm text-gray-500 mb-3 font-bold">參考範例</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="obs-examples"></div>
+                </div>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('day-list')" class="px-6 py-2 text-gray-500 hover:text-gray-800">取消</button>
+                    <button onclick="navigate('step-2')" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Step 2: 感受 -->
+        <main id="view-step-2" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 2/4：感受</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">感受｜你的感受是什麼？</h2>
+                <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/WvvPjz8M/2.png" class="w-full h-full object-cover"></div>
+                <br>
+                <p class="text-black-500 mb-4">針對今天發生的事情，你的感受是什麼？</p>
+                <textarea id="input-feel" class="w-full h-48 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-6" placeholder="例如：我感到很開心、焦慮、興奮..."></textarea>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('step-1')" class="px-6 py-2 text-gray-500 hover:text-gray-800">上一步</button>
+                    <button onclick="navigate('step-3')" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Step 3: 需要 -->
+        <main id="view-step-3" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 3/4：需要</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">需要｜我會有剛剛那些感受，是因為...</h2>
+                <div class="w-full h-full overflow-hidden">
+                        <img class="w-full h-full object-cover object-center" src="https://i.ibb.co/bg7J0yTQ/3.png">
+                </div>
+                <br>
+                <p class="text-black-500 mb-4">針對你的感受背後需要是什麼？</p>
+                <textarea id="input-need" class="w-full h-48 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-6" placeholder="例如：我需要被尊重、我重視我們的友誼..."></textarea>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('step-2')" class="px-6 py-2 text-gray-500 hover:text-gray-800">上一步</button>
+                    <button onclick="navigate('step-4')" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Step 4: 請求 -->
+        <main id="view-step-4" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 4/4：請求</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">請求｜我決定採取的具體行動是……</h2>
+                <textarea id="input-req" class="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-4" placeholder="具體行動..."></textarea>
+                <div class="mb-4">
+                    <p class="text-sm text-gray-500 mb-2 font-bold">參考範例</p>
+                    <div class="flex space-x-4 border-b border-gray-200">
+                        <button onclick="switchTab('encourage')" id="tab-encourage" class="tab-btn active pb-2 px-1 text-sm md:text-base font-medium">鼓舞自己</button>
+                        <button onclick="switchTab('communicate')" id="tab-communicate" class="tab-btn pb-2 px-1 text-sm md:text-base font-medium text-gray-500">跟對方溝通</button>
+                        <button onclick="switchTab('celebrate')" id="tab-celebrate" class="tab-btn pb-2 px-1 text-sm md:text-base font-medium text-gray-500">慶祝好心情</button>
+                    </div>
+                </div>
+                <div id="content-encourage" class="mb-6 space-y-2 req-tab-content"></div>
+                <div id="content-communicate" class="hidden-view mb-6 space-y-2 req-tab-content"></div>
+                <div id="content-celebrate" class="hidden-view mb-6 space-y-2 req-tab-content"></div>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('step-3')" class="px-6 py-2 text-gray-500 hover:text-gray-800">上一步</button>
+                    <button onclick="showPreview()" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- 8. 預覽 View -->
+        <main id="view-preview" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-6xl w-full bg-white rounded-3xl shadow-sm p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">日記預覽與創作</h2>
+                    <span id="date-display-preview" class="text-orange-600 font-bold bg-orange-100 px-3 py-1 rounded-full text-sm"></span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 左側 -->
+                    <div class="space-y-4">
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">1</span>觀察</h4><p id="preview-obs" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">2</span>感受</h4><p id="preview-feel" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">3</span>需要</h4><p id="preview-need" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">4</span>請求</h4><p id="preview-req" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                    </div>
+                    <!-- 右側 -->
+                    <div class="flex flex-col bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">為這篇日記配一張圖</h3>
+                        <div id="image-control-tabs" class="flex space-x-2 mb-4 bg-white p-1 rounded-lg border border-gray-200 inline-flex self-start">
+                            <button onclick="toggleImageMode('upload')" id="btn-mode-upload" class="px-4 py-2 rounded-md text-sm font-bold bg-orange-100 text-orange-600 transition-all">上傳相片</button>
+                            <button onclick="toggleImageMode('ai')" id="btn-mode-ai" class="px-4 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-orange-600 transition-all">AI 生成 (Gemini)</button>
+                        </div>
+                        <div id="image-display-area" class="w-full aspect-video bg-gray-200 rounded-xl mb-4 flex items-center justify-center overflow-hidden relative image-placeholder border-2 border-dashed border-gray-300">
+                            <p id="placeholder-text" class="text-gray-400 text-sm">尚未選擇或生成圖片</p>
+                            <img id="result-image" src="" class="hidden w-full h-full object-cover" alt="日記配圖">
+                            <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center">
+                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mb-2"></div><span class="text-orange-600 text-sm font-bold">AI 正在繪製中...</span>
+                            </div>
+                        </div>
+                        <div id="control-upload" class="mt-auto">
+                            <label class="block w-full cursor-pointer bg-white border border-gray-300 hover:border-orange-400 text-gray-700 hover:text-orange-600 py-3 rounded-xl text-center transition-all border-dashed border-2">
+                                <input type="file" class="hidden" accept="image/*" onchange="handleFileUpload(this)">
+                                <span>📷 選擇相片</span>
+                            </label>
+                        </div>
+                        <div id="control-ai" class="mt-auto hidden">
+                            <button onclick="generateAIImage()" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2">
+                                ✨ 開始生成圖像
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <div id="btn-group-create" class="flex justify-between">
+                        <button onclick="navigate('step-4')" class="px-6 py-2 text-gray-500 hover:text-gray-800 flex items-center">返回修改</button>
+                        <button onclick="initiateSaveSequence()" class="px-10 py-3 bg-green-500 hover:bg-green-600 text-white rounded-full font-bold shadow-lg transition-all transform hover:scale-105">完成並儲存日記</button>
+                    </div>
+                    <div id="btn-group-view" class="hidden flex justify-center">
+                        <button onclick="navigate('day-list')" class="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">返回日記列表</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 9. 共感畫布 View -->
+        <main id="view-canvas" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-7xl w-full flex flex-col h-full">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-2">
+                    <button onclick="navigate('home')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回首頁
+                    </button>
+                    <h2 class="text-2xl font-bold" style="color: #f79646;">共感畫布</h2>
+                    <div class="w-20"></div> 
+                </div>
+                <!-- 警語 -->
+                <div class="text-center mb-6">
+                    <p class="text-gray-500 text-sm bg-orange-50 inline-block px-4 py-2 rounded-full border border-orange-100">
+                        ⚠️ 請發言時請尊重他人為原則，不涉及人身攻擊、歧視、謾罵或不當言論。
+                    </p>
+                </div>
+                <!-- 瀑布流 -->
+                <div id="canvas-posts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6"></div>
+            </div>
+        </main>
+
+        <!-- 10. 個人檔案與成就 View -->
+        <main id="view-profile" class="hidden-view flex-grow flex flex-col items-center px-2 py-4 md:px-4 md:py-8 fade-in">
+            <div class="max-w-5xl w-full bg-white rounded-3xl shadow-sm p-4 md:p-8">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-8">
+                    <button onclick="navigate('home')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回首頁
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800">個人檔案與成就</h2>
+                    <div class="w-20"></div> 
+                </div>
+
+                <!-- 個人資訊 (簡化版) -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">小明</h3>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100"><span class="block text-xs text-gray-400">日記</span><span class="font-bold text-gray-800 text-lg">12</span></div>
+                        <div class="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100"><span class="block text-xs text-gray-400">能量點</span><span class="font-bold text-orange-500 text-lg" id="profile-points-display">58</span></div>
+                        <div class="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100"><span class="block text-xs text-gray-400">道具</span><span class="font-bold text-purple-600 text-lg" id="profile-items-display">4</span></div>
+                    </div>
+                </div>
+
+                <!-- 14天挑戰 (進度條樣式) -->
+                <div class="mb-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center"><span class="text-2xl mr-2">🔥</span>14天日記挑戰</h3>
+                        <span class="text-orange-600 font-bold bg-orange-100 px-3 py-1 rounded-full text-sm" id="challenge-status-text">挑戰進行中：第 5 天</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm font-bold text-gray-500">挑戰進度</span>
+                            <span class="text-sm font-bold text-orange-600" id="challenge-text">5 / 14 天</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-200 overflow-hidden relative shadow-inner">
+                            <!-- Progress Bar -->
+                            <div class="bg-gradient-to-r from-orange-400 to-orange-600 h-6 rounded-full progress-bar-fill flex items-center justify-end pr-2" style="width: 0%" id="challenge-bar">
+                                <span class="text-white text-xs font-bold shadow-sm" id="challenge-percent">0%</span>
+                            </div>
+                        </div>
+                        <!-- Milestones indicators below -->
+                        <div class="flex justify-between text-xs text-gray-400 mt-2 font-bold px-1 relative">
+                            <!-- Simple markers positioning -->
+                            <span style="left: 0%" class="absolute">Start</span>
+                            <span style="left: 21%" class="absolute text-center transform -translate-x-1/2">Day 3<br>🥉</span>
+                            <span style="left: 50%" class="absolute text-center transform -translate-x-1/2">Day 7<br>🥈</span>
+                            <span style="right: 0%" class="absolute text-right">Day 14<br>🥇</span>
+                        </div>
+                        <!-- Spacer for absolute text below -->
+                        <div class="h-8"></div>
+                        <p class="text-center text-gray-500 text-sm mt-2">每天紀錄一篇日記，連續 14 天即可完成挑戰並獲得「情緒管理達人」勳章！</p>
+                    </div>
+                </div>
+
+                <!-- 角色與道具商店 (整合區塊) -->
+                <div class="mb-10">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="text-2xl mr-2">🛍️</span>角色與道具商店</h3>
+                    <p class="text-gray-500 text-sm mb-6 bg-yellow-50 inline-block px-3 py-1 rounded-lg border border-yellow-100">使用能量點解鎖酷炫道具，角色會馬上穿上喔！</p>
+                    
+                    <!-- Modified Container for Mobile Side-by-Side -->
+                    <div class="flex flex-row gap-4 items-start relative">
+                        
+                        <!-- 左側: 角色預覽 (Sticky on both mobile and desktop) -->
+                        <div class="w-full md:w-1/3 flex flex-col items-center bg-orange-50 rounded-2xl p-6 border border-orange-100 sticky top-24 z-10">
+                            <h4 class="text-lg font-bold text-gray-700 mb-4">你的角色</h4>
+                            <!-- 動態角色 Avatar -->
+                            <div class="relative w-full aspect-square max-w-[240px]"> <!-- Responsive width -->
+                                <!-- Avatar Container: 改為相對定位的 Div，用來放圖片層 -->
+                                    <div class="w-full h-full bg-white rounded-full border-4 border-orange-200 shadow-lg relative overflow-hidden" id="avatar-container">
+                                        <!-- 這裡的內容會由 JS 動態生成 -->
+                                    </div>
+                            </div>
+                        </div>
+
+                        <!-- 右側: 商店 UI -->
+                        <div class="w-7/12 md:w-2/3">
+                            <!-- 商店分類 Tabs (Mobile: Scrollable) -->
+                            <div class="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar" id="shop-tabs">
+                                <button onclick="filterShop('body')" class="shop-tab inactive whitespace-nowrap" id="tab-body">顏色</button>
+                                <button onclick="filterShop('face')" class="shop-tab inactive whitespace-nowrap" id="tab-face">表情</button>
+                                <button onclick="filterShop('glasses')" class="shop-tab inactive whitespace-nowrap" id="tab-glasses">眼鏡</button>
+                                <button onclick="filterShop('hair')" class="shop-tab inactive whitespace-nowrap" id="tab-hair">頭髮</button>
+                                <button onclick="filterShop('hat')" class="shop-tab inactive whitespace-nowrap" id="tab-hat">帽子</button>
+                                <button onclick="filterShop('accessories')" class="shop-tab inactive whitespace-nowrap" id="tab-accessories">配件</button>
+                                <button onclick="filterShop('hand')" class="shop-tab inactive whitespace-nowrap" id="tab-hand">手持小物</button>
+
+                                
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" id="shop-container">
+                                <!-- JS 將會填充這裡 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 榮譽勳章牆 -->
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="text-2xl mr-2">🏅</span>榮譽勳章牆</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4" id="badges-container">
+                        <!-- 勳章會由 JS 產生 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 11. 排行榜 View (New) -->
+        <main id="view-leaderboard" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-4xl w-full bg-white rounded-3xl shadow-sm p-6 md:p-8">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-8">
+                    <button onclick="navigate('home')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回首頁
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2"><span class="text-yellow-500">🏆</span> 榮譽排行榜</h2>
+                    <div class="w-20"></div> 
+                </div>
+
+                <div class="bg-orange-50 rounded-2xl p-4 mb-6 text-center text-sm text-gray-600 border border-orange-100">
+                    排行榜依據每位同學獲得的<span class="font-bold text-orange-600">勳章數量</span>進行排序。
+                </div>
+
+                <!-- 排行榜列表 -->
+                <div class="space-y-4" id="leaderboard-list">
+                    <!-- JS 會填充這裡 -->
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Modals -->
+    <!-- 精靈信件 Modal -->
+    <div id="modal-spirit-letter" class="fixed inset-0 z-[70] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 relative shadow-2xl border-4 border-orange-100 overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-orange-50 to-transparent pointer-events-none"></div>
+            <div class="text-center relative z-10 flex flex-col h-full overflow-hidden">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex-shrink-0 flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-2 flex-shrink-0">來自精靈的信</h3>
+                <p class="text-sm text-gray-500 mb-4 flex-shrink-0">森林裡的精靈讀了你的心聲，捎來了一封信...</p>
+                <div class="bg-orange-50 p-6 rounded-2xl text-left mb-6 overflow-y-auto flex-grow min-h-[100px]">
+                    <p id="spirit-message-content" class="text-gray-700 leading-relaxed whitespace-pre-wrap">正在接收精靈的訊息...</p>
+                </div>
+                <button onclick="closeSpiritModal()" class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-md transition-all flex-shrink-0">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 購買確認 Modal -->
+    <div id="modal-buy-confirm" class="fixed inset-0 z-[80] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 relative shadow-2xl flex flex-col items-center text-center">
+            <div id="buy-modal-icon"></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">確認購買？</h3>
+            <p class="text-gray-600 mb-6 text-sm">
+                確定要花費 <span class="font-bold text-orange-500 text-lg" id="buy-modal-price">0</span>能量點<br>
+                解鎖「<span class="font-bold text-gray-800" id="buy-modal-name">道具名稱</span>」嗎？
+            </p>
+            <div class="flex gap-3 w-full">
+                <button onclick="closeBuyModal()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition-all">再想想</button>
+                <button onclick="confirmPurchase()" class="flex-1 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold shadow-md transition-all">確認購買</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 勳章解鎖 Modal -->
+    <div id="modal-badge-unlocked" class="fixed inset-0 z-[90] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 relative shadow-2xl flex flex-col items-center text-center overflow-hidden badge-pop-enter">
+            <!-- 光芒特效 -->
+            <div class="shine-effect"></div>
+            
+            <div class="relative z-10 w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center text-5xl mb-6 shadow-md border-4 border-white">
+                <span id="badge-modal-icon">🏅</span>
+            </div>
+            <h3 class="relative z-10 text-2xl font-bold text-gray-800 mb-1">恭喜解鎖勳章！</h3>
+            <h4 class="relative z-10 text-xl font-bold text-orange-500 mb-4" id="badge-modal-name">勳章名稱</h4>
+            <p class="relative z-10 text-gray-500 mb-8 text-sm">
+                你達成了一個新的里程碑！<br>繼續保持，收集更多榮譽吧！
+            </p>
+            <button onclick="closeBadgeModal()" class="relative z-10 w-full py-3 bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white rounded-xl font-bold shadow-md transition-all transform hover:scale-105">太棒了！</button>
+        </div>
+    </div>
+
+    <!-- 分享 Modal -->
+    <div id="modal-share-canvas" class="fixed inset-0 z-[70] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 relative shadow-2xl">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">是否分享至共感畫布？</h3>
+                <p class="text-gray-600 mb-6 px-2">分享後將隱藏部分資訊，匿名發佈。<br><span class="text-orange-600 font-bold mt-2 block">可獲得 10 能量點！</span></p>
+                <div class="flex gap-4">
+                    <button onclick="handleShare(false)" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition-all">不用了</button>
+                    <button onclick="handleShare(true)" class="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-1">分享 <span class="text-xs bg-white/20 px-1.5 py-0.5 rounded-full ml-1">+5</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-xl opacity-0 transition-opacity duration-300 pointer-events-none z-[80] text-sm md:text-base shadow-lg"></div>
+</body>
+</html>
