@@ -53,7 +53,7 @@ const mockStudents = [
 const shopItems = [
     // 身體 (Body) - 必須選一個，取代原本的顏色互斥
     // 請替換這裡的 URL 為您的身體圖片
-    { id: 'body1', category: 'body', name: '橙色', price: 0, unlocked: true, equipped: true, zIndex: 10, imgSrc: 'https://i.ibb.co/QjcFhSVc/1.png' }, 
+    { id: 'body1', category: 'body', name: '橙色', price: 0, unlocked: true, equipped: true, zIndex: 10, imgSrc: 'https://i.ibb.co/nN3Ry5Qh/9.png' }, 
     { id: 'body2', category: 'body', name: '粉色', price: 20, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/HDLFFZ8Q/6.png' }, // 示意：實際請換成紅色的圖
     { id: 'body3', category: 'body', name: '灰色', price: 20, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/SDjhnH1z/7.png' },
     { id: 'body4', category: 'body', name: '鵝黃色', price: 25, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/Lh85WH5Y/11.png' },
@@ -64,7 +64,7 @@ const shopItems = [
     // 頭髮 (Hair) - zIndex: 30
     { id: 'hair1', category: 'hair', name: '短髮_油頭', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/QFNz8ZBr/24.png' },
     { id: 'hair2', category: 'hair', name: '短捲髮_羊毛捲', price: 45, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/4L6SYDJ/26.png' },
-    { id: 'hair3', category: 'hair', name: '中捲髮_復古捲', price: 40, unlocked: false, equipped: false, zIndex: 0, imgSrc: 'https://i.ibb.co/7LxMtqd/23.png' },
+    { id: 'hair3', category: 'hair', name: '中捲髮_復古捲', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/7LxMtqd/23.png' },
     { id: 'hair4', category: 'hair', name: '短捲髮_瀏海', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/gLKhGYky/29.png' },
     { id: 'hair5', category: 'hair', name: '短捲髮_無瀏海', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/tpSCv6gZ/25.png' },
     { id: 'hair6', category: 'hair', name: '長髮_瀏海', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/Q3mVjxBB/28.png' },
@@ -898,3 +898,4 @@ function showToast(msg) {
     toast.classList.replace('opacity-0', 'opacity-100');
     setTimeout(() => toast.classList.replace('opacity-100', 'opacity-0'), 2000);
 }
+
