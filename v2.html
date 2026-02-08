@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>玩轉情緒學習平台</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 全域設定 --- */
+        body {
+            background-color: #fff4e3;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        /* --- 互動效果 --- */
+        .nav-shadow {
+            box-shadow: 0 4px 20px rgba(230, 145, 56, 0.1);
+        }
+        
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-hover:active {
+            transform: scale(0.98);
+        }
+
+        /* --- 日曆樣式 --- */
+        .calendar-day {
+            aspect-ratio: 1;
+            transition: all 0.2s;
+            border-radius: 0.75rem;
+            color: #7c2d12;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .calendar-day:hover:not(.empty) {
+            background-color: #fff7ed;
+            cursor: pointer;
+            color: #ea580c;
+            font-weight: bold;
+            box-shadow: inset 0 0 0 2px #fdba74;
+        }
+        
+        .calendar-day:active:not(.empty) {
+            background-color: #fed7aa;
+        }
+
+        /* --- UI 元件樣式 --- */
+        .writing-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .example-chip { 
+            background-color: #f3f4f6; 
+            color: #4b5563; 
+            transition: all 0.2s;
+            cursor: pointer;
+            text-align: left;
+            border: 1px solid transparent;
+        }
+        
+        .example-chip:hover { 
+            background-color: #ffedd5; 
+            color: #c2410c; 
+            border-color: #fdba74;
+        }
+        
+        .example-chip:active { 
+            transform: scale(0.98); 
+        }
+        
+        .tab-btn { 
+            transition: all 0.2s; 
+            border-bottom: 3px solid transparent; 
+        }
+        
+        .tab-btn.active { 
+            color: #ea580c; 
+            border-bottom-color: #ea580c; 
+            font-weight: bold; 
+        }
+
+        /* --- 視圖控制 --- */
+        .hidden-view { 
+            display: none !important; 
+        }
+        
+        .fade-in { 
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* --- 特殊區塊 --- */
+        .summary-box { 
+            background-color: #fff7ed; 
+            border-left: 4px solid #f97316; 
+            padding: 1.25rem; 
+            border-radius: 0.5rem; 
+        }
+        
+        .image-placeholder { 
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E"); 
+        }
+        
+        .modal-overlay { 
+            background-color: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(4px); 
+        }
+
+        /* --- 動畫特效 --- */
+        @keyframes heart-beat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .like-active svg { 
+            fill: #ef4444; 
+            stroke: #ef4444; 
+            animation: heart-beat 0.4s ease-in-out; 
+        }
+
+        .points-pop {
+            animation: pop 0.3s ease-out;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- 勳章與挑戰樣式 --- */
+        .badge-locked {
+            filter: grayscale(100%);
+            opacity: 0.6;
+        }
+        .badge-card {
+            transition: transform 0.2s;
+        }
+        .badge-card:hover {
+            transform: translateY(-5px);
+        }
+        .challenge-step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            position: relative;
+            z-index: 10;
+        }
+        .challenge-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #e5e7eb;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        .challenge-progress {
+            height: 100%;
+            background-color: #f97316;
+            transition: width 1s ease-out;
+        }
+        /* 商店卡片 */
+        .shop-card {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .shop-card:hover {
+            border-color: #fdba74;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .btn-buy:active {
+            transform: scale(0.95);
+        }
+        
+        /* 商店分類 Tab */
+        .shop-tab {
+            padding: 6px 12px; /* Smaller padding for mobile */
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .shop-tab.active {
+            background-color: #f97316;
+            color: white;
+            box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+        }
+        .shop-tab.inactive {
+            background-color: white;
+            color: #6b7280;
+            border-color: #e5e7eb;
+        }
+        .shop-tab.inactive:hover {
+            border-color: #f97316;
+            color: #f97316;
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* 角色 Avatar 動畫 */
+        .avatar-bounce {
+            animation: avatarBounce 0.5s ease-out;
+        }
+        @keyframes avatarBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .item-appear {
+            animation: itemFadeIn 0.5s ease-out;
+        }
+        @keyframes itemFadeIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .pet-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        
+        /* 進度條動畫 */
+        .progress-bar-fill {
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 排行榜樣式 */
+        .rank-item {
+            transition: all 0.2s;
+        }
+        .rank-item:hover {
+            transform: scale(1.01);
+            background-color: #fffaf0;
+        }
+        .rank-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .rank-1 { background-color: #fbbf24; color: #78350f; box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        .rank-2 { background-color: #94a3b8; color: white; }
+        .rank-3 { background-color: #b45309; color: white; }
+        .rank-other { background-color: #e5e7eb; color: #6b7280; }
+
+        /* 勳章解鎖 Modal 動畫 */
+        .badge-pop-enter {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .shine-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            transform: translate(-50%, -50%) rotate(0deg);
+            animation: spin 10s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- 導航欄 -->
+    <nav class="bg-white px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-center nav-shadow sticky top-0 z-50">
+        <!-- Brand -->
+        <div class="w-full md:w-auto flex justify-between items-center mb-2 md:mb-0">
+            <div class="text-xl md:text-2xl font-bold text-orange-600 cursor-pointer flex items-center gap-2" onclick="navigate('home')">
+            
+                <div class="flex h-10 w-30 overflow-hidden">
+                    <img src="https://i.ibb.co/Z1YkSdkd/14.png" class="w-auto h-full object-contain">
+                    <img src="https://i.ibb.co/mVdK4Ghb/10.png" class="w-auto h-full object-contain">
+                    <img src="https://i.ibb.co/xPfGsXb/12.png" class="w-auto h-full object-contain">
+                </div>
+
+                <span class="object-contain">玩轉情緒學習平台</span>
+                <div class="flex h-10 w-30 overflow-hidden">  
+                    <img src="https://i.ibb.co/DfZhznB6/13.png" class="w-full h-full object-contain">
+                    <img src="https://i.ibb.co/HLVvK52X/9.png" class="w-full h-full object-contain">
+                    <img src="https://i.ibb.co/sJC5MmBd/11.png" class="w-full h-full object-contain">
+             </div>
+            </div>
+        </div>
+
+        <!-- Right Menu -->
+        <div class="w-full md:w-auto flex justify-end items-center space-x-4 md:space-x-6 text-gray-700 font-medium text-sm md:text-base">
+            <!-- 排行榜按鈕 (圓角長方形 + Icon) -->
+            <button onclick="navigate('leaderboard')" class="bg-orange-50 text-orange-800 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-inner border border-orange-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                排行榜
+            </button>
+
+            <!-- 使用者資訊區 (修改為可點擊) -->
+            <div class="flex items-center space-x-3 border-l pl-4 md:pl-6 border-gray-200 cursor-pointer group" onclick="navigate('profile')" title="查看個人檔案與成就">
+                <span class="bg-orange-50 group-hover:bg-orange-100 transition-colors text-orange-800 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-inner border border-orange-100">
+                    小明 
+                    <span class="bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-full ml-1" id="user-points-display">🪙 0</span>
+                </span>
+                
+                <!-- 登出 Icon -->
+                <button id="logoutBtn" onclick="event.stopPropagation(); showToast('您已成功登出')" class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50" title="登出">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主應用程式容器 -->
+    <div id="app-container" class="flex-grow flex flex-col relative">
+        
+        <!-- 1. 首頁 View -->
+        <main id="view-home" class="flex-grow flex items-center justify-center px-4 py-8 md:py-12 fade-in">
+            <div class="max-w-6xl w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                
+                <!-- 卡片: 情緒日記 -->
+                <div onclick="navigate('calendar')" class="bg-white rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer card-hover border-2 border-transparent hover:border-orange-200 shadow-sm group">
+                    <div class="w-20 h-20 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/93NQdRSK/5.png" class="w-full h-full object-cover"></div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors">情緒日記</h2>
+                    <p class="text-gray-500 text-center">紀錄今天的感受，與自己對話</p>
+                </div>
+
+                <!-- 卡片: 共感畫布 -->
+                <div onclick="navigate('canvas')" class="bg-white rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer card-hover border-2 border-transparent hover:border-blue-200 shadow-sm group">
+                    <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/39BhRqsy/6.png" class="w-full h-full object-cover"></div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">共感畫布</h2>
+                    <p class="text-gray-500 text-center">練習給予溫暖的正向支持</p>
+                </div>
+
+                <!-- 卡片: 案例探討 -->
+                <div class="bg-white rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer card-hover border-2 border-transparent hover:border-red-200 shadow-sm group">
+                    <div class="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/N6bhYRc9/8.png" class="w-full h-full object-cover"></div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2 group-hover:text-red-600 transition-colors">案例探討</h2>
+                    <p class="text-gray-500 text-center">根據故事情境來進行非暴力溝通練習</p>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- 2. 日曆 View -->
+        <main id="view-calendar" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-4xl w-full bg-white rounded-3xl shadow-sm p-4 md:p-8">
+                <div class="flex flex-col-reverse md:flex-row items-center justify-between mb-6 md:mb-8 relative">
+                    <button onclick="navigate('home')" class="self-start md:self-center flex items-center text-gray-500 hover:text-orange-600 transition-colors mt-4 md:mt-0 z-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        <span class="text-sm md:text-base">返回首頁</span>
+                    </button>
+                    
+                    <div class="flex items-center justify-center w-full md:absolute md:left-0 md:right-0 pointer-events-none">
+                        <button onclick="changeMonth(-1)" class="pointer-events-auto p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-orange-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <h2 id="calendar-title" class="text-2xl md:text-3xl font-bold text-gray-800 mx-4 w-40 text-center"></h2>
+                        <button onclick="changeMonth(1)" class="pointer-events-auto p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-orange-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </div>
+                    <div class="hidden md:block w-20"></div> 
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1 md:gap-4 text-center"></div>
+            </div>
+        </main>
+
+        <!-- 3. 日記列表 View -->
+        <main id="view-day-list" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full flex flex-col h-full">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="navigate('calendar')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回日曆
+                    </button>
+                    <h2 id="day-list-title" class="text-2xl font-bold text-gray-800"></h2>
+                    <div class="w-20"></div> 
+                </div>
+                <div id="entries-container" class="space-y-4 mb-8"></div>
+                <button onclick="startWriting()" class="w-full py-4 rounded-xl border-2 border-dashed border-orange-300 text-orange-500 font-bold hover:bg-orange-50 hover:border-orange-400 transition-all flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    新增日記
+                </button>
+            </div>
+        </main>
+
+        <!-- 4-7. 寫作步驟 Views (合併邏輯) -->
+        <!-- Step 1: 觀察 -->
+        <main id="view-step-1" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 1/4：觀察</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">觀察｜你今天發生什麼事情？</h2>
+                <textarea id="input-obs" class="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-6" placeholder="請輸入..."></textarea>
+                <div class="mb-6"><p class="text-sm text-gray-500 mb-3 font-bold">參考範例</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="obs-examples"></div>
+                </div>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('day-list')" class="px-6 py-2 text-gray-500 hover:text-gray-800">取消</button>
+                    <button onclick="navigate('step-2')" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Step 2: 感受 -->
+        <main id="view-step-2" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 2/4：感受</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">感受｜你的感受是什麼？</h2>
+                <div class="h-full overflow-hidden"> <img src="https://i.ibb.co/WvvPjz8M/2.png" class="w-full h-full object-cover"></div>
+                <br>
+                <p class="text-black-500 mb-4">針對今天發生的事情，你的感受是什麼？</p>
+                <textarea id="input-feel" class="w-full h-48 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-6" placeholder="例如：我感到很開心、焦慮、興奮..."></textarea>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('step-1')" class="px-6 py-2 text-gray-500 hover:text-gray-800">上一步</button>
+                    <button onclick="navigate('step-3')" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Step 3: 需要 -->
+        <main id="view-step-3" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 3/4：需要</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">需要｜我會有剛剛那些感受，是因為...</h2>
+                <div class="w-full h-full overflow-hidden">
+                        <img class="w-full h-full object-cover object-center" src="https://i.ibb.co/bg7J0yTQ/3.png">
+                </div>
+                <br>
+                <p class="text-black-500 mb-4">針對你的感受背後需要是什麼？</p>
+                <textarea id="input-need" class="w-full h-48 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-6" placeholder="例如：我需要被尊重、我重視我們的友誼..."></textarea>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('step-2')" class="px-6 py-2 text-gray-500 hover:text-gray-800">上一步</button>
+                    <button onclick="navigate('step-4')" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Step 4: 請求 -->
+        <main id="view-step-4" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-2xl w-full writing-card p-6 md:p-10 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold text-orange-600">步驟 4/4：請求</h3><span class="date-display text-gray-400 text-sm"></span></div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">請求｜我決定採取的具體行動是……</h2>
+                <textarea id="input-req" class="w-full h-32 p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-300 focus:border-orange-500 outline-none resize-none mb-4" placeholder="具體行動..."></textarea>
+                <div class="mb-4">
+                    <p class="text-sm text-gray-500 mb-2 font-bold">參考範例</p>
+                    <div class="flex space-x-4 border-b border-gray-200">
+                        <button onclick="switchTab('encourage')" id="tab-encourage" class="tab-btn active pb-2 px-1 text-sm md:text-base font-medium">鼓舞自己</button>
+                        <button onclick="switchTab('communicate')" id="tab-communicate" class="tab-btn pb-2 px-1 text-sm md:text-base font-medium text-gray-500">跟對方溝通</button>
+                        <button onclick="switchTab('celebrate')" id="tab-celebrate" class="tab-btn pb-2 px-1 text-sm md:text-base font-medium text-gray-500">慶祝好心情</button>
+                    </div>
+                </div>
+                <div id="content-encourage" class="mb-6 space-y-2 req-tab-content"></div>
+                <div id="content-communicate" class="hidden-view mb-6 space-y-2 req-tab-content"></div>
+                <div id="content-celebrate" class="hidden-view mb-6 space-y-2 req-tab-content"></div>
+                <div class="mt-auto flex justify-between pt-4 border-t border-gray-100">
+                    <button onclick="navigate('step-3')" class="px-6 py-2 text-gray-500 hover:text-gray-800">上一步</button>
+                    <button onclick="showPreview()" class="px-8 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">下一步</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- 8. 預覽 View -->
+        <main id="view-preview" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-6xl w-full bg-white rounded-3xl shadow-sm p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">日記預覽與創作</h2>
+                    <span id="date-display-preview" class="text-orange-600 font-bold bg-orange-100 px-3 py-1 rounded-full text-sm"></span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 左側 -->
+                    <div class="space-y-4">
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">1</span>觀察</h4><p id="preview-obs" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">2</span>感受</h4><p id="preview-feel" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">3</span>需要</h4><p id="preview-need" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                        <div class="summary-box"><h4 class="text-orange-600 font-bold mb-1 flex items-center"><span class="bg-orange-200 text-orange-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">4</span>請求</h4><p id="preview-req" class="text-gray-700 whitespace-pre-wrap pl-8"></p></div>
+                    </div>
+                    <!-- 右側 -->
+                    <div class="flex flex-col bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">為這篇日記配一張圖</h3>
+                        <div id="image-control-tabs" class="flex space-x-2 mb-4 bg-white p-1 rounded-lg border border-gray-200 inline-flex self-start">
+                            <button onclick="toggleImageMode('upload')" id="btn-mode-upload" class="px-4 py-2 rounded-md text-sm font-bold bg-orange-100 text-orange-600 transition-all">上傳相片</button>
+                            <button onclick="toggleImageMode('ai')" id="btn-mode-ai" class="px-4 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-orange-600 transition-all">AI 生成 (Gemini)</button>
+                        </div>
+                        <div id="image-display-area" class="w-full aspect-video bg-gray-200 rounded-xl mb-4 flex items-center justify-center overflow-hidden relative image-placeholder border-2 border-dashed border-gray-300">
+                            <p id="placeholder-text" class="text-gray-400 text-sm">尚未選擇或生成圖片</p>
+                            <img id="result-image" src="" class="hidden w-full h-full object-cover" alt="日記配圖">
+                            <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 flex flex-col items-center justify-center">
+                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mb-2"></div><span class="text-orange-600 text-sm font-bold">AI 正在繪製中...</span>
+                            </div>
+                        </div>
+                        <div id="control-upload" class="mt-auto">
+                            <label class="block w-full cursor-pointer bg-white border border-gray-300 hover:border-orange-400 text-gray-700 hover:text-orange-600 py-3 rounded-xl text-center transition-all border-dashed border-2">
+                                <input type="file" class="hidden" accept="image/*" onchange="handleFileUpload(this)">
+                                <span>📷 選擇相片</span>
+                            </label>
+                        </div>
+                        <div id="control-ai" class="mt-auto hidden">
+                            <button onclick="generateAIImage()" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-2">
+                                ✨ 開始生成圖像
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-gray-100">
+                    <div id="btn-group-create" class="flex justify-between">
+                        <button onclick="navigate('step-4')" class="px-6 py-2 text-gray-500 hover:text-gray-800 flex items-center">返回修改</button>
+                        <button onclick="initiateSaveSequence()" class="px-10 py-3 bg-green-500 hover:bg-green-600 text-white rounded-full font-bold shadow-lg transition-all transform hover:scale-105">完成並儲存日記</button>
+                    </div>
+                    <div id="btn-group-view" class="hidden flex justify-center">
+                        <button onclick="navigate('day-list')" class="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold shadow-md transition-all">返回日記列表</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 9. 共感畫布 View -->
+        <main id="view-canvas" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-7xl w-full flex flex-col h-full">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-2">
+                    <button onclick="navigate('home')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回首頁
+                    </button>
+                    <h2 class="text-2xl font-bold" style="color: #f79646;">共感畫布</h2>
+                    <div class="w-20"></div> 
+                </div>
+                <!-- 警語 -->
+                <div class="text-center mb-6">
+                    <p class="text-gray-500 text-sm bg-orange-50 inline-block px-4 py-2 rounded-full border border-orange-100">
+                        ⚠️ 請發言時請尊重他人為原則，不涉及人身攻擊、歧視、謾罵或不當言論。
+                    </p>
+                </div>
+                <!-- 瀑布流 -->
+                <div id="canvas-posts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6"></div>
+            </div>
+        </main>
+
+        <!-- 10. 個人檔案與成就 View -->
+        <main id="view-profile" class="hidden-view flex-grow flex flex-col items-center px-2 py-4 md:px-4 md:py-8 fade-in">
+            <div class="max-w-5xl w-full bg-white rounded-3xl shadow-sm p-4 md:p-8">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-8">
+                    <button onclick="navigate('home')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回首頁
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800">個人檔案與成就</h2>
+                    <div class="w-20"></div> 
+                </div>
+
+                <!-- 個人資訊 (簡化版) -->
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">小明</h3>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100"><span class="block text-xs text-gray-400">日記</span><span class="font-bold text-gray-800 text-lg">12</span></div>
+                        <div class="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100"><span class="block text-xs text-gray-400">能量點</span><span class="font-bold text-orange-500 text-lg" id="profile-points-display">58</span></div>
+                        <div class="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100"><span class="block text-xs text-gray-400">道具</span><span class="font-bold text-purple-600 text-lg" id="profile-items-display">4</span></div>
+                    </div>
+                </div>
+
+                <!-- 14天挑戰 (進度條樣式) -->
+                <div class="mb-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center"><span class="text-2xl mr-2">🔥</span>14天日記挑戰</h3>
+                        <span class="text-orange-600 font-bold bg-orange-100 px-3 py-1 rounded-full text-sm" id="challenge-status-text">挑戰進行中：第 5 天</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm font-bold text-gray-500">挑戰進度</span>
+                            <span class="text-sm font-bold text-orange-600" id="challenge-text">5 / 14 天</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-6 dark:bg-gray-200 overflow-hidden relative shadow-inner">
+                            <!-- Progress Bar -->
+                            <div class="bg-gradient-to-r from-orange-400 to-orange-600 h-6 rounded-full progress-bar-fill flex items-center justify-end pr-2" style="width: 0%" id="challenge-bar">
+                                <span class="text-white text-xs font-bold shadow-sm" id="challenge-percent">0%</span>
+                            </div>
+                        </div>
+                        <!-- Milestones indicators below -->
+                        <div class="flex justify-between text-xs text-gray-400 mt-2 font-bold px-1 relative">
+                            <!-- Simple markers positioning -->
+                            <span style="left: 0%" class="absolute">Start</span>
+                            <span style="left: 21%" class="absolute text-center transform -translate-x-1/2">Day 3<br>🥉</span>
+                            <span style="left: 50%" class="absolute text-center transform -translate-x-1/2">Day 7<br>🥈</span>
+                            <span style="right: 0%" class="absolute text-right">Day 14<br>🥇</span>
+                        </div>
+                        <!-- Spacer for absolute text below -->
+                        <div class="h-8"></div>
+                        <p class="text-center text-gray-500 text-sm mt-2">每天紀錄一篇日記，連續 14 天即可完成挑戰並獲得「情緒管理達人」勳章！</p>
+                    </div>
+                </div>
+
+                <!-- 角色與道具商店 (整合區塊) -->
+                <div class="mb-10">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="text-2xl mr-2">🛍️</span>角色與道具商店</h3>
+                    <p class="text-gray-500 text-sm mb-6 bg-yellow-50 inline-block px-3 py-1 rounded-lg border border-yellow-100">使用能量點解鎖酷炫道具，角色會馬上穿上喔！</p>
+                    
+                    <!-- Modified Container for Mobile Side-by-Side -->
+                    <div class="flex flex-row gap-4 items-start relative">
+                        
+                        <!-- 左側: 角色預覽 (Sticky on both mobile and desktop) -->
+                        <div class="w-full md:w-1/3 flex flex-col items-center bg-orange-50 rounded-2xl p-6 border border-orange-100 sticky top-24 z-10">
+                            <h4 class="text-lg font-bold text-gray-700 mb-4">你的角色</h4>
+                            <!-- 動態角色 Avatar -->
+                            <div class="relative w-full aspect-square max-w-[240px]"> <!-- Responsive width -->
+                                <!-- Avatar Container: 改為相對定位的 Div，用來放圖片層 -->
+                                    <div class="w-full h-full bg-white rounded-full border-4 border-orange-200 shadow-lg relative overflow-hidden" id="avatar-container">
+                                        <!-- 這裡的內容會由 JS 動態生成 -->
+                                    </div>
+                            </div>
+                        </div>
+
+                        <!-- 右側: 商店 UI -->
+                        <div class="w-7/12 md:w-2/3">
+                            <!-- 商店分類 Tabs (Mobile: Scrollable) -->
+                            <div class="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar" id="shop-tabs">
+                                <button onclick="filterShop('body')" class="shop-tab inactive whitespace-nowrap" id="tab-body">顏色</button>
+                                <button onclick="filterShop('face')" class="shop-tab inactive whitespace-nowrap" id="tab-face">表情</button>
+                                <button onclick="filterShop('glasses')" class="shop-tab inactive whitespace-nowrap" id="tab-glasses">眼鏡</button>
+                                <button onclick="filterShop('hair')" class="shop-tab inactive whitespace-nowrap" id="tab-hair">頭髮</button>
+                                <button onclick="filterShop('hat')" class="shop-tab inactive whitespace-nowrap" id="tab-hat">帽子</button>
+                                <button onclick="filterShop('accessories')" class="shop-tab inactive whitespace-nowrap" id="tab-accessories">配件</button>
+                                <button onclick="filterShop('hand')" class="shop-tab inactive whitespace-nowrap" id="tab-hand">手持小物</button>
+
+                                
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" id="shop-container">
+                                <!-- JS 將會填充這裡 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 榮譽勳章牆 -->
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><span class="text-2xl mr-2">🏅</span>榮譽勳章牆</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4" id="badges-container">
+                        <!-- 勳章會由 JS 產生 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 11. 排行榜 View (New) -->
+        <main id="view-leaderboard" class="hidden-view flex-grow flex flex-col items-center px-4 py-6 md:py-8 fade-in">
+            <div class="max-w-4xl w-full bg-white rounded-3xl shadow-sm p-6 md:p-8">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-8">
+                    <button onclick="navigate('home')" class="flex items-center text-gray-500 hover:text-orange-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                        返回首頁
+                    </button>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2"><span class="text-yellow-500">🏆</span> 榮譽排行榜</h2>
+                    <div class="w-20"></div> 
+                </div>
+
+                <div class="bg-orange-50 rounded-2xl p-4 mb-6 text-center text-sm text-gray-600 border border-orange-100">
+                    排行榜依據每位同學獲得的<span class="font-bold text-orange-600">勳章數量</span>進行排序。
+                </div>
+
+                <!-- 排行榜列表 -->
+                <div class="space-y-4" id="leaderboard-list">
+                    <!-- JS 會填充這裡 -->
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Modals -->
+    <!-- 精靈信件 Modal -->
+    <div id="modal-spirit-letter" class="fixed inset-0 z-[70] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 relative shadow-2xl border-4 border-orange-100 overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-orange-50 to-transparent pointer-events-none"></div>
+            <div class="text-center relative z-10 flex flex-col h-full overflow-hidden">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex-shrink-0 flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-2 flex-shrink-0">來自精靈的信</h3>
+                <p class="text-sm text-gray-500 mb-4 flex-shrink-0">森林裡的精靈讀了你的心聲，捎來了一封信...</p>
+                <div class="bg-orange-50 p-6 rounded-2xl text-left mb-6 overflow-y-auto flex-grow min-h-[100px]">
+                    <p id="spirit-message-content" class="text-gray-700 leading-relaxed whitespace-pre-wrap">正在接收精靈的訊息...</p>
+                </div>
+                <button onclick="closeSpiritModal()" class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold shadow-md transition-all flex-shrink-0">我知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 購買確認 Modal -->
+    <div id="modal-buy-confirm" class="fixed inset-0 z-[80] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 relative shadow-2xl flex flex-col items-center text-center">
+            <div id="buy-modal-icon"></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">確認購買？</h3>
+            <p class="text-gray-600 mb-6 text-sm">
+                確定要花費 <span class="font-bold text-orange-500 text-lg" id="buy-modal-price">0</span>能量點<br>
+                解鎖「<span class="font-bold text-gray-800" id="buy-modal-name">道具名稱</span>」嗎？
+            </p>
+            <div class="flex gap-3 w-full">
+                <button onclick="closeBuyModal()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition-all">再想想</button>
+                <button onclick="confirmPurchase()" class="flex-1 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold shadow-md transition-all">確認購買</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 勳章解鎖 Modal -->
+    <div id="modal-badge-unlocked" class="fixed inset-0 z-[90] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 relative shadow-2xl flex flex-col items-center text-center overflow-hidden badge-pop-enter">
+            <!-- 光芒特效 -->
+            <div class="shine-effect"></div>
+            
+            <div class="relative z-10 w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center text-5xl mb-6 shadow-md border-4 border-white">
+                <span id="badge-modal-icon">🏅</span>
+            </div>
+            <h3 class="relative z-10 text-2xl font-bold text-gray-800 mb-1">恭喜解鎖勳章！</h3>
+            <h4 class="relative z-10 text-xl font-bold text-orange-500 mb-4" id="badge-modal-name">勳章名稱</h4>
+            <p class="relative z-10 text-gray-500 mb-8 text-sm">
+                你達成了一個新的里程碑！<br>繼續保持，收集更多榮譽吧！
+            </p>
+            <button onclick="closeBadgeModal()" class="relative z-10 w-full py-3 bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white rounded-xl font-bold shadow-md transition-all transform hover:scale-105">太棒了！</button>
+        </div>
+    </div>
+
+    <!-- 分享 Modal -->
+    <div id="modal-share-canvas" class="fixed inset-0 z-[70] hidden modal-overlay flex items-center justify-center px-4 fade-in">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 relative shadow-2xl">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">是否分享至共感畫布？</h3>
+                <p class="text-gray-600 mb-6 px-2">分享後將隱藏部分資訊，匿名發佈。<br><span class="text-orange-600 font-bold mt-2 block">可獲得 10 能量點！</span></p>
+                <div class="flex gap-4">
+                    <button onclick="handleShare(false)" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-bold transition-all">不用了</button>
+                    <button onclick="handleShare(true)" class="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold shadow-md transition-all flex items-center justify-center gap-1">分享 <span class="text-xs bg-white/20 px-1.5 py-0.5 rounded-full ml-1">+5</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-xl opacity-0 transition-opacity duration-300 pointer-events-none z-[80] text-sm md:text-base shadow-lg"></div>
+
+    <script>
+        // --- 狀態變數 ---
+        let currentDay = 1;
+        let currentYear = 2026;
+        let currentMonth = 4;
+        let userPoints = 200; // 初始分數模擬 (提高方便測試)
+        let tempDiaryEntry = null;
+        let currentImage = null;
+        let currentShopCategory = 'body'; // 預設商店分類
+        let pendingItem = null; // 待購買道具
+        const views = ['home', 'calendar', 'day-list', 'step-1', 'step-2', 'step-3', 'step-4', 'preview', 'canvas', 'profile', 'leaderboard'];
+        const diaryData = {};
+
+        // 模擬使用者成就狀態 (小明)
+        const userStats = {
+            consecutiveDays: 5,     // 連續天數
+            replyCount: 8,          // 回覆同學次數
+            classAnswers: 6,        // 課堂回答次數
+            itemsUnlocked: 0,       // 解鎖道具數 (會在 onload 校正)
+            goodAssignment: true,   // 作業表現良好
+            diaryComplete: true     // 日記表達完整
+        };
+
+        // 模擬其他學生的數據 (排行榜用)
+        const mockStudents = [
+            {
+                name: "小華",
+                badgeCount: 8,
+                badges: ["情緒紀錄者", "情緒觀察員", "溫暖回應者", "收集者"],
+                avatarConfig: { bodyColor: '#f87171', faceColor: '#fee2e2', hair: 'item9', glasses: 'item2', face: null, action: 'item3' }
+            },
+            {
+                name: "小美",
+                badgeCount: 6,
+                badges: ["情緒紀錄者", "課堂積極參與者", "理解他人者"],
+                avatarConfig: { bodyColor: '#60a5fa', faceColor: '#fecaca', hair: 'item10', glasses: null, face: 'item1', action: null }
+            },
+            {
+                name: "阿強",
+                badgeCount: 4,
+                badges: ["情緒紀錄者", "收集者"],
+                avatarConfig: { bodyColor: '#facc15', faceColor: '#fef08a', hair: null, glasses: 'item2', face: null, action: 'item5' }
+            },
+            {
+                name: "小莉",
+                badgeCount: 9,
+                badges: ["情緒管理達人", "情緒觀察員", "溫暖回應者", "收集專家", "作業表現良好"],
+                avatarConfig: { bodyColor: '#a78bfa', faceColor: '#ede9fe', hair: 'item10', glasses: null, face: 'item1', action: 'item8' }
+            }
+        ];
+
+        // 商店道具資料 (包含分類、價錢、鎖定狀態、裝備狀態)
+        const shopItems = [
+            // 身體 (Body) - 必須選一個，取代原本的顏色互斥
+            // 請替換這裡的 URL 為您的身體圖片
+            { id: 'body1', category: 'body', name: '橙色', price: 0, unlocked: true, equipped: true, zIndex: 10, imgSrc: 'https://i.ibb.co/nN3Ry5Qh/9.png' }, 
+            { id: 'body2', category: 'body', name: '粉色', price: 20, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/HDLFFZ8Q/6.png' }, // 示意：實際請換成紅色的圖
+            { id: 'body3', category: 'body', name: '灰色', price: 20, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/SDjhnH1z/7.png' },
+            { id: 'body4', category: 'body', name: '鵝黃色', price: 25, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/Lh85WH5Y/11.png' },
+            { id: 'body5', category: 'body', name: '藍色', price: 25, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/8nqqqgDp/14.png' },
+            { id: 'body6', category: 'body', name: '紫色', price: 25, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/G3R5wk20/16.png' },
+            { id: 'body7', category: 'body', name: '綠色', price: 25, unlocked: false, equipped: false, zIndex: 10, imgSrc: 'https://i.ibb.co/hRRbThmv/20.png' },
+            
+            // 頭髮 (Hair) - zIndex: 30
+            { id: 'hair1', category: 'hair', name: '短髮_油頭', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/QFNz8ZBr/24.png' },
+            { id: 'hair2', category: 'hair', name: '短捲髮_羊毛捲', price: 45, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/4L6SYDJ/26.png' },
+            { id: 'hair3', category: 'hair', name: '中捲髮_復古捲', price: 40, unlocked: false, equipped: false, zIndex:30, imgSrc: 'https://i.ibb.co/7LxMtqd/23.png' },
+            { id: 'hair4', category: 'hair', name: '短捲髮_瀏海', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/gLKhGYky/29.png' },
+            { id: 'hair5', category: 'hair', name: '短捲髮_無瀏海', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/tpSCv6gZ/25.png' },
+            { id: 'hair6', category: 'hair', name: '長髮_瀏海', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/Q3mVjxBB/28.png' },
+            { id: 'hair7', category: 'hair', name: '短髮_無瀏海', price: 40, unlocked: false, equipped: false, zIndex: 30, imgSrc: 'https://i.ibb.co/tpSCv6gZ/25.png' },
+
+            // 眼鏡 (Glasses) - zIndex: 40
+            { id: 'glasses1', category: 'glasses', name: '圓框眼鏡', price: 30, unlocked: false, equipped: false, zIndex: 40, imgSrc: 'https://i.ibb.co/WNFThVFp/22.png' },
+            { id: 'glasses3', category: 'glasses', name: '黑色墨鏡', price: 30, unlocked: false, equipped: false, zIndex: 40, imgSrc: 'https://i.ibb.co/rJpLyhR/24.png' },
+            { id: 'glasses4', category: 'glasses', name: '藍色墨鏡', price: 30, unlocked: false, equipped: false, zIndex: 40, imgSrc: 'https://i.ibb.co/TxTvdGhh/25.png' },
+            { id: 'glasses5', category: 'glasses', name: '鳳梨墨鏡', price: 30, unlocked: false, equipped: false, zIndex: 40, imgSrc: 'https://i.ibb.co/Mk9pCnVQ/26.png' },
+            { id: 'glasses6', category: 'glasses', name: '花花墨鏡', price: 30, unlocked: false, equipped: false, zIndex: 40, imgSrc: 'https://i.ibb.co/V0WP15HK/27.png' },
+            { id: 'glasses7', category: 'glasses', name: '豹紋墨鏡', price: 30, unlocked: false, equipped: false, zIndex: 40, imgSrc: 'https://i.ibb.co/HTBSVvSG/28.png' },
+            { id: 'glasses8', category: 'glasses', name: '生日快樂墨鏡', price: 30, unlocked: false, equipped: false, zIndex: 40, imgSrc: 'https://i.ibb.co/N6y0SJRL/29.png' },
+
+            // 表情 (Face) - zIndex: 20
+            { id: 'face1', category: 'face', name: '喜', price: 30, unlocked: true, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/7tbM6Nxy/30.png' },
+            { id: 'face2', category: 'face', name: '樂', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/5gby29g3/31.png' },
+            { id: 'face3', category: 'face', name: '怕', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/W4fWd4s9/32.png' },
+            { id: 'face4', category: 'face', name: '怒', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/rKNDyJZz/33.png' },
+            { id: 'face5', category: 'face', name: '泣', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/HTZYjLZ0/34.png' },
+            { id: 'face6', category: 'face', name: '愣', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/gZhwspzy/35.png' },
+            { id: 'face7', category: 'face', name: '呆', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/S4Bmx8j6/36.png' },
+
+            // 帽子 (Hat) - zIndex: 50
+            { id: 'hat1', category: 'hat', name: '草帽', price: 30, unlocked: false, equipped: false, zIndex: 50, imgSrc: 'https://i.ibb.co/tM56J1T4/3.png' },
+            { id: 'hat2', category: 'hat', name: '聖誕帽', price: 30, unlocked: false, equipped: false, zIndex: 50, imgSrc: 'https://i.ibb.co/h1WG0Wz2/4.png' },
+            { id: 'hat3', category: 'hat', name: '南瓜帽', price: 30, unlocked: false, equipped: false, zIndex: 50, imgSrc: 'https://i.ibb.co/9mgtGjN7/5.png' },
+            { id: 'hat4', category: 'hat', name: '魔法帽', price: 30, unlocked: false, equipped: false, zIndex: 50, imgSrc: 'https://i.ibb.co/8gFbSPsd/6.png' },
+            { id: 'hat5', category: 'hat', name: '聖誕帽', price: 30, unlocked: false, equipped: false, zIndex: 50, imgSrc: 'https://i.ibb.co/hJGPS3sP/7.png' },
+
+            // 配件 (Accessories) - zIndex: 50
+            { id: 'accessories1', category: 'accessories', name: '藍蝴蝶結', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/xqP08qgS/8.png' },
+            { id: 'accessories2', category: 'accessories', name: '紅蝴蝶結', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/0VfqD0VD/9.png' },
+            { id: 'accessories3', category: 'accessories', name: '點點領帶', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/gLgDdd69/10.png' },
+            { id: 'accessories4', category: 'accessories', name: '條紋領帶', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/GfFr8CkR/11.png' },
+            { id: 'accessories5', category: 'accessories', name: '鬍子', price: 30, unlocked: false, equipped: false, zIndex: 20, imgSrc: 'https://i.ibb.co/LDy2P4K5/12.png' },
+
+            // 手持小物 (Hand) - zIndex: 60
+            { id: 'hand1', category: 'hand', name: '畫盤', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/Lz02vR1k/14.png' },
+            { id: 'hand2', category: 'hand', name: '畫筆', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/mCyhs5QB/15.png' },
+            { id: 'hand3', category: 'hand', name: '泰迪熊', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/JWtckqTS/16.png' },
+            { id: 'hand4', category: 'hand', name: '珍奶', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/Vcmj0JHc/17.png' },
+            { id: 'hand5', category: 'hand', name: '漢堡', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/8gNcSD2Y/18.png' },
+            { id: 'hand6', category: 'hand', name: '薯條', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/Wpz5vWGT/19.png' },
+            { id: 'hand7', category: 'hand', name: '冰淇淋', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/wZkKjm16/20.png' },
+            { id: 'hand8', category: 'hand', name: '相機', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/35PKdjft/21.png' },
+            { id: 'hand9', category: 'hand', name: '手機', price: 30, unlocked: false, equipped: false, zIndex: 60, imgSrc: 'https://i.ibb.co/FkZMDCZv/13.png' },
+        ];
+
+        // 勳章定義 (會動態檢查 unlocked 狀態)
+        // 為了實作解鎖通知，我們需要在物件中增加 unlocked 狀態屬性，而不是只靠函數計算
+        const badgesConfig = [
+            { id: 'b1', name: '情緒紀錄者', icon: '📝', check: () => userStats.consecutiveDays >= 3, unlocked: false },
+            { id: 'b2', name: '情緒觀察員', icon: '🕵️', check: () => userStats.consecutiveDays >= 7, unlocked: false },
+            { id: 'b3', name: '情緒管理達人', icon: '🧘', check: () => userStats.consecutiveDays >= 14, unlocked: false },
+            { id: 'b4', name: '作業表現良好', icon: '📚', check: () => userStats.goodAssignment, unlocked: false },
+            { id: 'b5', name: '情緒日記表達完整', icon: '🌟', check: () => userStats.diaryComplete, unlocked: false },
+            { id: 'b6', name: '課堂積極參與者', icon: '🙋', check: () => userStats.classAnswers >= 5, unlocked: false },
+            { id: 'b7', name: '溫暖回應者', icon: '❤️', check: () => userStats.replyCount >= 5, unlocked: false },
+            { id: 'b8', name: '理解他人者', icon: '🤝', check: () => userStats.replyCount >= 10, unlocked: false },
+            { id: 'b9', name: '收集者', icon: '🎒', check: () => userStats.itemsUnlocked >= 4, unlocked: false },
+            { id: 'b10', name: '收集專家', icon: '🏆', check: () => userStats.itemsUnlocked >= 8, unlocked: false }
+        ];
+        
+        // 模擬共感畫布資料
+        let sharedPosts = [
+            {
+                id: 1,
+                date: "2026/03/28",
+                feel: "覺得很挫折，因為努力了很久卻沒有進步，但我相信休息一下會更好。",
+                image: "https://picsum.photos/seed/10/600/400",
+                likes: 12,
+                likedByMe: false,
+                comments: [{ author: "小華", text: "加油！我也遇過這樣的情況，休息一下再出發！" }]
+            },
+            {
+                id: 2,
+                date: "2026/03/30",
+                feel: "今天超開心的！終於完成了專題報告，感覺如釋重負。",
+                image: "https://picsum.photos/seed/20/600/400",
+                likes: 8,
+                likedByMe: false,
+                comments: []
+            }
+        ];
+
+        // --- 初始化 ---
+        window.onload = function() {
+            renderCalendar();
+            // 初始化範例按鈕內容
+            initExamples();
+            
+            // 初始化 itemsUnlocked 數量
+            userStats.itemsUnlocked = shopItems.filter(i => i.unlocked && i.category !== 'body').length; 
+            
+            // 初始化勳章狀態 (避免頁面載入時跳出通知)
+            badgesConfig.forEach(badge => {
+                if (badge.check()) {
+                    badge.unlocked = true;
+                }
+            });
+            
+            updatePointsUI();
+        };
+
+        // --- 檢查並解鎖新勳章 (核心邏輯) ---
+        function checkBadges() {
+            let hasNewUnlock = false;
+            
+            badgesConfig.forEach(badge => {
+                // 如果條件滿足 且 尚未解鎖
+                if (badge.check() && !badge.unlocked) {
+                    badge.unlocked = true;
+                    showBadgeModal(badge);
+                    hasNewUnlock = true;
+                }
+            });
+
+            if (hasNewUnlock && !document.getElementById('view-profile').classList.contains('hidden-view')) {
+                renderProfile(); // 如果正在個人頁面，刷新勳章牆
+            }
+        }
+
+        // --- 勳章 Modal 邏輯 ---
+        function showBadgeModal(badge) {
+            document.getElementById('badge-modal-icon').textContent = badge.icon;
+            document.getElementById('badge-modal-name').textContent = badge.name;
+            document.getElementById('modal-badge-unlocked').classList.remove('hidden');
+        }
+
+        function closeBadgeModal() {
+            document.getElementById('modal-badge-unlocked').classList.add('hidden');
+        }
+
+        // --- 範例資料 ---
+        function initExamples() {
+            const obsContainer = document.getElementById('obs-examples');
+            const obsExamples = [
+                "今天在(什麼地方)我(做什麼事情)", "我聽到(什麼事情)", 
+                "我今天和(誰)在(哪裡)(什麼事情)", "今天(什麼時間)，(誰)對我說了(什麼話)", 
+                "在(什麼地方)，發生了(一件什麼樣的事)", "(什麼時候)我在(哪裡)看到(什麼事情)", 
+                "當我看到 / 聽到 (什麼事情)"
+            ];
+            obsContainer.innerHTML = obsExamples.map(text => 
+                `<div onclick="addText('input-obs', '${text}')" class="example-chip p-3 rounded-lg text-sm border border-gray-100">${text}</div>`
+            ).join('');
+
+            const reqEncourage = document.getElementById('content-encourage');
+            const reqCommunicate = document.getElementById('content-communicate');
+            const reqCelebrate = document.getElementById('content-celebrate');
+
+            reqEncourage.innerHTML = [
+                "因為我現在感到(情緒)，所以我決定先(做什麼樣的事情)",
+                "為了照顧我對(需求)的重視，我要告訴自己：『( 一句鼓勵自己的話) 』",
+                "我現在還沒準備好面對，所以我決定先(做一件讓自己快樂的事情)"
+            ].map(t => `<div onclick="addText('input-req', '${t}')" class="example-chip p-3 rounded-lg text-sm border border-gray-100">${t}</div>`).join('');
+
+            reqCommunicate.innerHTML = [
+                "你願不願意(提出一項具體的方法)......", "你可不可以(提出一項具體的方法)......"
+            ].map(t => `<div onclick="addText('input-req', '${t}')" class="example-chip p-3 rounded-lg text-sm border border-gray-100">${t}</div>`).join('');
+
+            reqCelebrate.innerHTML = [
+                "這件事讓我太(感受)了！所以我決定去跟(對象)說：『(感謝的話)』",
+                "為了記住這個美好的時刻，我決定(做一個紀錄的動作)",
+                "我要(做一件開心的事)來獎勵自己！"
+            ].map(t => `<div onclick="addText('input-req', '${t}')" class="example-chip p-3 rounded-lg text-sm border border-gray-100">${t}</div>`).join('');
+        }
+
+        // --- 導航控制 ---
+        function navigate(viewName) {
+            views.forEach(v => document.getElementById(`view-${v}`).classList.add('hidden-view'));
+            document.getElementById(`view-${viewName}`).classList.remove('hidden-view');
+            
+            if (viewName === 'calendar') renderCalendar();
+            if (viewName === 'canvas') renderCanvas();
+            if (viewName === 'profile') {
+                renderProfile();
+                filterShop(currentShopCategory); // 預設顯示頭髮
+            }
+            if (viewName === 'leaderboard') renderLeaderboard(); // 渲染排行榜
+            window.scrollTo(0, 0);
+        }
+
+        // --- 核心修改: Avatar HTML 產生器 ---
+        function generateAvatarHTML(configMap) {
+            // configMap 是一個物件，例如 { hair: 'hair1', body: 'body1' ... }
+            let layersHtml = '';
+            
+            // 遍歷所有類別，找到對應的圖片並根據 zIndex 堆疊
+            // 為了確保 zIndex 正確，我們應該去 shopItems 找資料
+            const equippedItems = [];
+            
+            // 將 configMap 轉為 Item 物件列表
+            for (const category in configMap) {
+                const itemId = configMap[category];
+                if (itemId) {
+                    const item = shopItems.find(i => i.id === itemId);
+                    if (item) equippedItems.push(item);
+                }
+            }
+
+            // 根據 zIndex 排序 (小的在後面)
+            equippedItems.sort((a, b) => a.zIndex - b.zIndex);
+
+            // 產生 HTML
+            equippedItems.forEach(item => {
+                // 使用 object-contain 確保圖片完整顯示，absolute inset-0 讓它們重疊
+                // 這裡使用了假圖片，您可以將 item.imgSrc 換成真實路徑
+                
+                // 如果是身體顏色不同，可以在這裡加 filter，或者直接使用不同的 imgSrc
+                let style = `z-index: ${item.zIndex};`;
+                layersHtml += `<img src="${item.imgSrc}" class="avatar-layer absolute inset-0 w-full h-full object-contain" style="${style}" alt="${item.name}">`;
+            });
+
+            return layersHtml;
+        }
+        // --- Leaderboard Rendering ---
+        function renderLeaderboard() {
+            const listContainer = document.getElementById('leaderboard-list');
+            listContainer.innerHTML = '';
+            const myBadges = badgesConfig.filter(b => b.unlocked);
+            
+            // 取得我當前的裝備設定
+            const myEquippedMap = {};
+            shopItems.forEach(item => {
+                if(item.equipped) myEquippedMap[item.category] = item.id;
+            });
+
+            const me = { name: "小明 (我)", badgeCount: myBadges.length, badges: myBadges.map(b => b.name), avatarConfig: myEquippedMap, isMe: true };
+            const allStudents = [me, ...mockStudents];
+            allStudents.sort((a, b) => b.badgeCount - a.badgeCount);
+
+            allStudents.forEach((student, index) => {
+                const rank = index + 1;
+                let rankClass = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "rank-other";
+                
+                // 呼叫新的 Image Generator
+                const avatarHtml = generateAvatarHTML(student.avatarConfig);
+
+                const badgesHtml = student.badges.length > 0 ? student.badges.map(b => `<span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md mr-1 mb-1 inline-block">${b}</span>`).join('') : `<span class="text-xs text-gray-400">尚未獲得勳章</span>`;
+
+                const row = document.createElement('div');
+                row.className = `flex items-center bg-white p-4 rounded-xl border ${student.isMe ? 'border-orange-300 ring-2 ring-orange-100' : 'border-gray-100'} rank-item shadow-sm`;
+                row.innerHTML = `
+                    <div class="mr-4 flex-shrink-0"><div class="rank-badge ${rankClass}">${rank}</div></div>
+                    <div class="w-16 h-16 mr-4 flex-shrink-0 relative">
+                        <div class="w-full h-full bg-white rounded-full border-2 border-orange-100 overflow-hidden relative">
+                            ${avatarHtml}
+                        </div>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-gray-800 text-lg">${student.name}</h4>
+                            <div class="text-orange-600 font-bold bg-orange-50 px-3 py-1 rounded-full text-sm flex items-center"><span class="mr-1">🏅</span> ${student.badgeCount}</div>
+                        </div>
+                        <div class="mt-2 flex flex-wrap">${badgesHtml}</div>
+                    </div>`;
+                listContainer.appendChild(row);
+            });
+        }
+
+
+        
+
+        // --- Profile 渲染邏輯 ---
+        function renderProfile() {
+            // 更新 Profile Header 數據
+            document.getElementById('profile-points-display').textContent = userPoints;
+            document.getElementById('profile-items-display').textContent = userStats.itemsUnlocked;
+
+            // 0. 渲染角色外觀
+            updateCharacterAppearance();
+
+            // 1. 渲染挑戰進度條 (Modified for progress bar style)
+            const consecutiveDays = userStats.consecutiveDays;
+            const totalDays = 14;
+            const progressPercent = (consecutiveDays / totalDays) * 100;
+            
+            // Update text
+            document.getElementById('challenge-text').textContent = `${consecutiveDays} / ${totalDays} 天`;
+            document.getElementById('challenge-status-text').textContent = `挑戰進行中：第 ${consecutiveDays} 天`;
+            
+            // Update bar width and label
+            const bar = document.getElementById('challenge-bar');
+            bar.style.width = `${progressPercent}%`;
+            
+            // Ensure percentage text is updated
+            const percentText = document.getElementById('challenge-percent');
+            percentText.textContent = `${Math.round(progressPercent)}%`;
+
+            // 2. 渲染道具商店 (這部分現在由 filterShop 觸發)
+            // renderShop(); 
+
+            // 3. 渲染勳章
+            const badgeContainer = document.getElementById('badges-container');
+            badgeContainer.innerHTML = '';
+            badgesConfig.forEach(badge => {
+                const isUnlocked = badge.unlocked; // 使用狀態屬性而不是函數
+                const card = document.createElement('div');
+                card.className = `badge-card bg-gray-50 rounded-xl p-4 flex flex-col items-center text-center border border-gray-100 ${isUnlocked ? 'bg-white shadow-sm' : 'badge-locked'}`;
+                
+                const iconBg = isUnlocked ? 'bg-yellow-100' : 'bg-gray-200';
+                
+                card.innerHTML = `
+                    <div class="w-16 h-16 rounded-full ${iconBg} flex items-center justify-center text-3xl mb-3 shadow-inner">
+                        ${badge.icon}
+                    </div>
+                    <h4 class="font-bold text-gray-800 text-sm mb-1">${badge.name}</h4>
+                    ${isUnlocked ? '<span class="text-xs text-green-500 font-bold mt-2">✨ 已解鎖</span>' : '<span class="text-xs text-gray-400 mt-2">🔒 未解鎖</span>'}
+                `;
+                badgeContainer.appendChild(card);
+            });
+        }
+
+         // --- 核心修改: 個人頁面角色更新 ---
+        function updateCharacterAppearance() {
+            const container = document.getElementById('avatar-container');
+            
+            // 取得目前裝備的項目 Map
+            const currentEquippedMap = {};
+            shopItems.forEach(item => {
+                if(item.equipped) currentEquippedMap[item.category] = item.id;
+            });
+
+            // 清空並重新插入圖片
+            container.innerHTML = generateAvatarHTML(currentEquippedMap);
+
+            // 視覺特效：角色彈跳
+            container.classList.remove('avatar-bounce');
+            void container.offsetWidth; 
+            container.classList.add('avatar-bounce');
+        }
+
+        // --- 商店邏輯 ---
+        function filterShop(category) {
+            currentShopCategory = category;
+            
+            // 更新 Tabs 樣式
+            const tabs = ['hair', 'glasses', 'face', 'body', 'hat', 'accessories', 'hand'];
+            tabs.forEach(c => {
+                const btn = document.getElementById(`tab-${c}`);
+                if (c === category) {
+                    btn.classList.add('active');
+                    btn.classList.remove('inactive');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('inactive');
+                }
+            });
+
+            renderShop(category);
+        }
+
+        function renderShop(category) {
+            const container = document.getElementById('shop-container');
+            container.innerHTML = '';
+            const itemsToShow = shopItems.filter(item => item.category === category);
+            
+            itemsToShow.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `shop-card bg-white rounded-xl p-4 flex flex-col items-center text-center relative overflow-hidden cursor-pointer ${item.equipped ? 'border-orange-400 bg-orange-50' : (item.unlocked ? 'border-gray-200' : 'border-gray-100')}`;
+                card.onclick = () => toggleItem(item.id);
+
+                let statusHtml = '';
+                if (item.equipped) statusHtml = `<div class="mt-2 text-xs font-bold text-white bg-orange-500 px-3 py-1 rounded-full">使用中</div>`;
+                else if (item.unlocked) statusHtml = `<div class="mt-2 text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">已擁有</div>`;
+                else statusHtml = `<div class="mt-2 text-xs font-bold text-white bg-green-500 px-3 py-1 rounded-full">$${item.price}</div>`;
+
+                // 商店圖標如果是圖片，可以顯示縮略圖
+                let iconDisplay = item.imgSrc 
+                    ? `<img src="${item.imgSrc}" class="w-8 h-8 object-contain">` 
+                    : item.icon;
+
+                card.innerHTML = `<div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-2xl mb-2 shadow-inner overflow-hidden">${iconDisplay}</div><h4 class="font-bold text-gray-800 text-sm flex-grow">${item.name}</h4>${statusHtml}`;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleItem(id) {
+            const item = shopItems.find(i => i.id === id);
+            if (!item) return;
+
+            // 情況 1: 尚未解鎖 -> 購買流程 (修改為彈出視窗)
+            if (!item.unlocked) {
+                if (userPoints >= item.price) {
+                    openBuyModal(item);
+                } else {
+                    showToast("能量點數不足！再多寫幾篇日記吧！");
+                }
+                return;
+            }
+
+            // 情況 2: 已解鎖 -> 裝備/卸下流程
+            if (item.equipped) {
+                // 如果已經裝備，再次點擊是否卸下？
+                // 對於身體顏色，不能卸下(必須有一個)，除非切換。
+                // 對於頭髮/動作，可以卸下變成光頭/空手。
+                if (item.category === 'body') return; // 顏色不能取消，只能換別的
+                item.equipped = false;
+                showToast(`卸下 ${item.name}`);
+            } else {
+                equipItem(item);
+            }
+            
+            // 更新 UI
+            updatePointsUI();
+            renderProfile(); // 更新角色與數據
+            filterShop(currentShopCategory); // 重新渲染商店狀態
+        }
+
+        function openBuyModal(item) {
+            pendingItem = item;
+            document.getElementById('buy-modal-name').textContent = item.name;
+            document.getElementById('buy-modal-price').textContent = item.price;
+            document.getElementById('modal-buy-confirm').classList.remove('hidden');
+        }
+
+        function closeBuyModal() {
+            document.getElementById('modal-buy-confirm').classList.add('hidden');
+            pendingItem = null;
+        }
+
+        function confirmPurchase() {
+            if (!pendingItem) return;
+            
+            const item = pendingItem;
+            closeBuyModal(); // Close first
+
+            // Execute purchase logic
+            userPoints -= item.price;
+            item.unlocked = true;
+            userStats.itemsUnlocked++; 
+            
+            showToast(`購買成功！獲得 ${item.name}`);
+            equipItem(item); // Auto equip
+            
+            updatePointsUI();
+            checkBadges(); // 購買後檢查是否有新勳章
+            renderProfile(); 
+            filterShop(currentShopCategory);
+        }
+
+        function equipItem(targetItem) {
+            // 根據類別處理互斥邏輯
+            if (['hair', 'face', 'glasses', 'body','hat', 'accessories', 'hand'].includes(targetItem.category)) {
+                // 找出同類別已裝備的物品，將其卸下 (body 必選一個，其他可選)
+                // 注意：動作類別這裡設定為互斥(一次拿一樣)，如果想混搭可修改此處
+                shopItems.filter(i => i.category === targetItem.category && i.id !== targetItem.id).forEach(i => i.equipped = false);
+            }
+            
+            targetItem.equipped = true;
+            
+            // 視覺特效：角色彈跳
+            const avatar = document.getElementById('avatar-container');
+            if(avatar) {
+                avatar.classList.remove('avatar-bounce');
+                void avatar.offsetWidth; // 觸發重繪
+                avatar.classList.add('avatar-bounce');
+            }
+        }
+
+        // --- 日曆邏輯 ---
+        function changeMonth(offset) {
+            currentMonth += offset;
+            if (currentMonth < 1) { currentMonth = 12; currentYear--; } 
+            else if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const title = document.getElementById('calendar-title');
+            grid.innerHTML = '';
+            
+            const monthNames = ["", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+            title.textContent = `${currentYear} ${monthNames[currentMonth]}`;
+
+            const days = ['日', '一', '二', '三', '四', '五', '六'];
+            let html = days.map(d => `<div class="font-bold text-gray-400 py-2">${d}</div>`).join('');
+
+            const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth, 0).getDate();
+
+            for(let i=0; i<firstDay; i++) html += `<div class="calendar-day empty"></div>`;
+            grid.innerHTML = html;
+
+            for(let i=1; i<=totalDays; i++) {
+                const dateStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(i).padStart(2,'0')}`;
+                const entries = diaryData[dateStr];
+                
+                let style = '', content = `<span class="relative z-10">${i}</span>`, classes = 'text-gray-700';
+                if (entries && entries.length > 0) {
+                    const imgEntry = [...entries].reverse().find(e => e.image);
+                    if (imgEntry) {
+                        style = `background-image: url('${imgEntry.image}'); background-size: cover; background-position: center;`;
+                        content = `<span class="relative z-10 bg-white/80 px-1.5 py-0.5 rounded-md shadow-sm text-xs md:text-sm font-bold text-orange-800">${i}</span>`;
+                        classes = '';
+                    } else {
+                        content += `<div class="absolute bottom-1 w-1.5 h-1.5 bg-orange-500 rounded-full left-1/2 transform -translate-x-1/2"></div>`;
+                    }
+                }
+
+                const cell = document.createElement('div');
+                cell.className = `calendar-day flex flex-col items-center justify-center text-sm md:text-lg relative overflow-hidden cursor-pointer ${classes}`;
+                if (style) cell.style.cssText = style;
+                cell.innerHTML = content;
+                cell.onclick = () => openDayList(i);
+                grid.appendChild(cell);
+            }
+        }
+
+        // --- 日記列表邏輯 ---
+        function openDayList(day) {
+            currentDay = day;
+            const dateStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(day).padStart(2,'0')}`;
+            document.getElementById('day-list-title').textContent = dateStr;
+            renderEntries(dateStr);
+            navigate('day-list');
+        }
+
+        function renderEntries(dateStr) {
+            const container = document.getElementById('entries-container');
+            const entries = diaryData[dateStr] || [];
+            container.innerHTML = entries.length === 0 
+                ? `<div class="text-center text-gray-400 py-8"><p>今天還沒有日記喔！</p><p class="text-sm">點擊下方按鈕開始紀錄</p></div>`
+                : '';
+
+            entries.forEach((entry, index) => {
+                const imgHtml = entry.image ? `<div class="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 ml-3"><img src="${entry.image}" class="w-full h-full object-cover"></div>` : '';
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-sm border border-orange-100 flex justify-between items-start cursor-pointer hover:shadow-md transition-shadow";
+                card.onclick = () => viewDiaryEntry(dateStr, index);
+                card.innerHTML = `
+                    <div class="flex-grow overflow-hidden">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold bg-orange-100 text-orange-600 px-2 py-1 rounded-md">第 ${index + 1} 篇</span>
+                            <span class="text-xs text-gray-400">${entry.time}</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 truncate mb-1">${entry.obs ? entry.obs.substring(0, 20) + '...' : '未命名日記'}</h4>
+                        <p class="text-sm text-gray-500 truncate">${entry.feel ? '感受: ' + entry.feel : ''}</p>
+                    </div>
+                    ${imgHtml}`;
+                container.appendChild(card);
+            });
+        }
+
+        // --- 日記檢視模式 ---
+        function viewDiaryEntry(dateStr, index) {
+            const entry = diaryData[dateStr][index];
+            document.getElementById('preview-obs').textContent = entry.obs;
+            document.getElementById('preview-feel').textContent = entry.feel;
+            document.getElementById('preview-need').textContent = entry.need;
+            document.getElementById('preview-req').textContent = entry.req;
+            document.getElementById('date-display-preview').textContent = entry.date;
+
+            const imgDisplay = document.getElementById('result-image');
+            const placeholder = document.getElementById('placeholder-text');
+            if (entry.image) {
+                imgDisplay.src = entry.image;
+                imgDisplay.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                imgDisplay.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                placeholder.textContent = "此篇日記沒有配圖";
+            }
+
+            // UI Mode: View
+            document.getElementById('image-control-tabs').classList.add('hidden');
+            document.getElementById('control-upload').classList.add('hidden');
+            document.getElementById('control-ai').classList.add('hidden');
+            document.getElementById('btn-group-create').classList.add('hidden');
+            document.getElementById('btn-group-view').classList.remove('hidden');
+            navigate('preview');
+        }
+
+        // --- 寫作流程 ---
+        function startWriting() {
+            const dateStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
+            document.querySelectorAll('.date-display').forEach(el => el.textContent = dateStr);
+            ['input-obs', 'input-feel', 'input-need', 'input-req'].forEach(id => document.getElementById(id).value = '');
+            
+            currentImage = null;
+            document.getElementById('result-image').src = '';
+            document.getElementById('result-image').classList.add('hidden');
+            document.getElementById('placeholder-text').classList.remove('hidden');
+            navigate('step-1');
+        }
+
+        function showPreview() {
+            const dateStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
+            document.getElementById('date-display-preview').textContent = dateStr;
+            document.getElementById('preview-obs').textContent = document.getElementById('input-obs').value || "(未填寫)";
+            document.getElementById('preview-feel').textContent = document.getElementById('input-feel').value || "(未填寫)";
+            document.getElementById('preview-need').textContent = document.getElementById('input-need').value || "(未填寫)";
+            document.getElementById('preview-req').textContent = document.getElementById('input-req').value || "(未填寫)";
+
+            // UI Mode: Create
+            document.getElementById('image-control-tabs').classList.remove('hidden');
+            toggleImageMode('upload');
+            document.getElementById('btn-group-create').classList.remove('hidden');
+            document.getElementById('btn-group-view').classList.add('hidden');
+            navigate('preview');
+        }
+
+        // --- AI 與圖片 ---
+        function toggleImageMode(mode) {
+            const btnUp = document.getElementById('btn-mode-upload');
+            const btnAi = document.getElementById('btn-mode-ai');
+            const ctrlUp = document.getElementById('control-upload');
+            const ctrlAi = document.getElementById('control-ai');
+            
+            const activeClass = "px-4 py-2 rounded-md text-sm font-bold bg-orange-100 text-orange-600 transition-all";
+            const inactiveClass = "px-4 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-orange-600 transition-all";
+
+            if (mode === 'upload') {
+                btnUp.className = activeClass; btnAi.className = inactiveClass;
+                ctrlUp.classList.remove('hidden'); ctrlAi.classList.add('hidden');
+            } else {
+                btnAi.className = activeClass.replace('orange', 'indigo'); btnUp.className = inactiveClass;
+                ctrlUp.classList.add('hidden'); ctrlAi.classList.remove('hidden');
+            }
+        }
+
+        function handleFileUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage = e.target.result;
+                    const img = document.getElementById('result-image');
+                    img.src = currentImage; img.classList.remove('hidden');
+                    document.getElementById('placeholder-text').classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function generateAIImage() {
+            const spinner = document.getElementById('loading-spinner');
+            spinner.classList.remove('hidden');
+            
+            const obs = document.getElementById('input-obs').value;
+            const feel = document.getElementById('input-feel').value;
+            const need = document.getElementById('input-need').value;
+            const prompt = `A soft, artistic illustration for diary. Mood: ${feel}. Need: ${need}. Context: ${obs}. Style: Dreamy watercolor, pastel colors, abstract but comforting.`;
+
+            // 模擬 AI 生成 (實際串接需在後端或填入 Key)
+            setTimeout(() => {
+                spinner.classList.add('hidden');
+                // 使用 Picsum 作為範例
+                const randomId = Math.floor(Math.random() * 100);
+                currentImage = `https://picsum.photos/seed/${randomId}/600/400`;
+                const img = document.getElementById('result-image');
+                img.src = currentImage; img.classList.remove('hidden');
+                document.getElementById('placeholder-text').classList.add('hidden');
+                showToast("AI 圖像生成成功！");
+            }, 2000);
+        }
+
+        // --- 儲存與分享流程 ---
+        async function initiateSaveSequence() {
+            const dateStr = `${currentYear}/${String(currentMonth).padStart(2,'0')}/${String(currentDay).padStart(2,'0')}`;
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            tempDiaryEntry = {
+                date: dateStr, time: timeStr,
+                obs: document.getElementById('input-obs').value,
+                feel: document.getElementById('input-feel').value,
+                need: document.getElementById('input-need').value,
+                req: document.getElementById('input-req').value,
+                image: currentImage
+            };
+
+            document.getElementById('modal-spirit-letter').classList.remove('hidden');
+            const msgContent = document.getElementById('spirit-message-content');
+            msgContent.innerHTML = `<span class="animate-pulse">✨ 精靈正在為你寫信，請稍候...</span>`;
+
+            // 模擬 AI 回信
+            setTimeout(() => {
+                msgContent.textContent = "親愛的孩子，精靈看見了你的努力。每一個感受都是靈魂的禮物，請溫柔地擁抱它們。你做得很棒，休息一下，明天會更好！✨";
+            }, 1500);
+        }
+
+        function closeSpiritModal() {
+            document.getElementById('modal-spirit-letter').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('modal-share-canvas').classList.remove('hidden');
+            }, 300);
+        }
+
+        function handleShare(shouldShare) {
+            document.getElementById('modal-share-canvas').classList.add('hidden');
+            
+            const dateStr = tempDiaryEntry.date;
+            if (!diaryData[dateStr]) diaryData[dateStr] = [];
+            diaryData[dateStr].push(tempDiaryEntry);
+
+            if (shouldShare) {
+                const newPost = {
+                    id: Date.now(),
+                    author: "匿名同學",
+                    date: tempDiaryEntry.date,
+                    feel: tempDiaryEntry.feel,
+                    image: tempDiaryEntry.image,
+                    likes: 0,
+                    likedByMe: false,
+                    comments: []
+                };
+                sharedPosts.unshift(newPost);
+                userPoints += 10;
+                updatePointsUI();
+                showToast("已分享並獲得 10 能量點！");
+                checkBadges(); // 檢查分享相關勳章
+            } else {
+                showToast("日記已儲存 (私人)");
+            }
+            tempDiaryEntry = null;
+            navigate('calendar');
+        }
+
+        // --- 共感畫布邏輯 ---
+        function renderCanvas() {
+            const container = document.getElementById('canvas-posts-container');
+            container.innerHTML = '';
+
+            sharedPosts.forEach(post => {
+                const imgHtml = post.image ? 
+                    `<div class="w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-4 border border-gray-100"><img src="${post.image}" class="w-full h-full object-cover"></div>` : 
+                    `<div class="w-full h-24 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl mb-4 flex items-center justify-center text-orange-300 italic text-sm">此貼文無配圖</div>`;
+
+                const commentsHtml = post.comments.map(c => 
+                    `<div class="text-sm bg-gray-50 p-2 rounded-lg mb-1"><span class="font-bold text-gray-700">${c.author}:</span> <span class="text-gray-600">${c.text}</span></div>`
+                ).join('');
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-full";
+                card.innerHTML = `
+                    <div class="mb-4"><div class="text-sm text-gray-400 font-medium">${post.date}</div></div>
+                    ${imgHtml}
+                    <div class="bg-orange-50 p-4 rounded-xl mb-4 border-l-4 border-orange-300">
+                        <span class="text-xs font-bold text-orange-500 block mb-1">我的感受</span>
+                        <p class="text-gray-700">${post.feel}</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                        <button onclick="toggleLike(${post.id})" class="flex items-center space-x-2 text-gray-500 hover:text-red-500 transition-colors ${post.likedByMe ? 'like-active text-red-500' : ''}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="${post.likedByMe ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                            <span>${post.likes}</span>
+                        </button>
+                        <div class="flex items-center text-gray-400 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            ${post.comments.length} 留言
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2 max-h-32 overflow-y-auto">${commentsHtml}</div>
+                    <div class="mt-4 flex gap-2">
+                        <input type="text" id="comment-input-${post.id}" placeholder="寫下你的鼓勵..." class="flex-grow bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                        <button onclick="addComment(${post.id})" class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap">發送</button>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleLike(postId) {
+            const post = sharedPosts.find(p => p.id === postId);
+            if (post) {
+                if (post.likedByMe) {
+                    post.likes--; post.likedByMe = false;
+                    userPoints = Math.max(0, userPoints - 2);
+                    showToast("取消愛心");
+                } else {
+                    post.likes++; post.likedByMe = true;
+                    userPoints += 2;
+                    showToast("送出愛心！獲得 2 能量點！");
+                }
+                updatePointsUI();
+                renderCanvas();
+                checkBadges(); // 檢查互動相關勳章
+            }
+        }
+
+        function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if (text) {
+                const post = sharedPosts.find(p => p.id === postId);
+                if (post) {
+                    post.comments.push({ author: "小明", text: text });
+                    userPoints += 5;
+                    updatePointsUI();
+                    showToast("留言成功！獲得 5 能量點！");
+                    renderCanvas();
+                    checkBadges(); // 檢查互動相關勳章
+                }
+            }
+        }
+
+        // --- 共用與輔助 ---
+        function updatePointsUI() {
+            const el = document.getElementById('user-points-display');
+            if(el) {
+                el.textContent = `🪙 ${userPoints}`;
+                el.classList.add('points-pop');
+                setTimeout(() => el.classList.remove('points-pop'), 300);
+            }
+            
+            // 同時更新個人檔案頁面的點數顯示
+            const profileEl = document.getElementById('profile-points-display');
+            if(profileEl) profileEl.textContent = userPoints;
+        }
+
+        function addText(inputId, text) {
+            const el = document.getElementById(inputId);
+            el.value = (el.value.trim() !== '') ? el.value + '\n' + text : text;
+        }
+
+        function switchTab(tabName) {
+            ['encourage', 'communicate', 'celebrate'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.remove('active', 'text-orange-600', 'border-orange-500');
+                document.getElementById(`tab-${t}`).classList.add('text-gray-500');
+                document.getElementById(`content-${t}`).classList.add('hidden-view');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active', 'text-orange-600', 'border-orange-500');
+            document.getElementById(`tab-${tabName}`).classList.remove('text-gray-500');
+            document.getElementById(`content-${tabName}`).classList.remove('hidden-view');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => toast.classList.replace('opacity-100', 'opacity-0'), 2000);
+        }
+    </script>
+</body>
+</html>
