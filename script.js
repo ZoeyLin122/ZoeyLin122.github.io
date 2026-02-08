@@ -821,8 +821,8 @@ function renderCanvas() {
             </div>
             <div class="mt-4 space-y-2 max-h-32 overflow-y-auto">${commentsHtml}</div>
             <div class="mt-4 flex gap-2">
-                <input type="text" id="comment-input-${post.id}" placeholder="寫下你的鼓勵..." class="flex-grow bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                <button onclick="addComment(${post.id})" class="bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap">發送</button>
+                <input type="text" id="comment-input-${post.id}" placeholder="寫下你的留言..." class="flex-1 min-w-0 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                <button onclick="addComment(${post.id})" class="flex-1 min-w-0 bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap">發送</button>
             </div>`;
         container.appendChild(card);
     });
@@ -898,4 +898,5 @@ function showToast(msg) {
     toast.classList.replace('opacity-0', 'opacity-100');
     setTimeout(() => toast.classList.replace('opacity-100', 'opacity-0'), 2000);
 }
+
 
